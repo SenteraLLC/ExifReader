@@ -71,7 +71,11 @@ function readTag(dataView, ifdType, tiffHeaderOffset, offset, byteOrder, include
     const TAG_VALUE_OFFSET = TAG_COUNT_OFFSET + Types.getTypeSize('LONG');
 
     const tagCode = Types.getShortAt(dataView, offset, byteOrder);
-    const tagType = Types.getShortAt(dataView, offset + TAG_TYPE_OFFSET, byteOrder);
+    // This works around a bug in which some imagers declare the XMP
+    // tag (700) in TIFF files as type ASCII instead of type BYTE:
+    const tagType = tagCode === 700
+        ? Types.tagTypes['BYTE']
+        : Types.getShortAt(dataView, offset + TAG_TYPE_OFFSET, byteOrder);
     const tagCount = Types.getLongAt(dataView, offset + TAG_COUNT_OFFSET, byteOrder);
     let tagValue;
 
